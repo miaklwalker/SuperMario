@@ -1,11 +1,19 @@
 import {Vec2} from "./math.js";
+import BoundingBox from "./boundingBox.js";
 
 
 
+export const Sides = {
+    TOP:Symbol('top'),
+    BOTTOM:Symbol('bottom'),
+    RIGHT:Symbol('right'),
+    LEFT:Symbol('left')
+};
 
 export class Trait {
     constructor(name){
         this.NAME = name;
+
     }
     obstruct(){
 
@@ -20,6 +28,11 @@ export default class Entity {
         this.pos = new Vec2(0,0);
         this.vel = new Vec2(0,0);
         this.size = new Vec2(0,0);
+        this.offset = new Vec2(0,0);
+        this.bounds = new BoundingBox(this.pos,this.size,this.offset);
+
+        this.lifetime = 0;
+
         this.traits = [];
     }
     obstruct(side){
@@ -34,6 +47,7 @@ export default class Entity {
     update(deltaTime){
         this.traits.forEach(trait=>{
             trait.update(this,deltaTime)
-        })
+        });
+        this.lifetime += deltaTime
     }
 }

@@ -1,13 +1,14 @@
+import TileResolver from "./tileResolver.js";
 
-export default function createBackgroundLayer(level,sprites){
+export default function createBackgroundLayer(level,tiles,sprites){
     const buffer = document.createElement('canvas');
-    const {tiles,tileCollider:{tiles:resolver}} = level;
+    const resolver = new TileResolver(tiles);
     buffer.width = 256+16;
     buffer.height = 240;
 
     const context = buffer.getContext('2d');
-    let startIndex,endIndex;
-    function redraw(){
+    function redraw(startIndex,endIndex){
+        context.clearRect(0,0,buffer.width,buffer.height);
         for(let x = startIndex ; x <= endIndex ; ++x){
             const col = tiles.grid[x];
             col && col.forEach((tile,y)=>{
@@ -24,9 +25,7 @@ export default function createBackgroundLayer(level,sprites){
         const drawFrom = resolver.toIndex(camera.pos.x);
         const drawTo = drawFrom + drawWidth;
         // if(drawFrom !== startIndex || drawTo !== endIndex) {
-            startIndex = drawFrom;
-            endIndex = drawTo;
-            redraw();
+            redraw(drawFrom,drawTo);
         //}
         context.drawImage(buffer,-camera.pos.x%16,-camera.pos.y);
     }
@@ -65,21 +64,24 @@ export function createCollisionLayer(level){
     return (context,camera)=>{
 
     resolvedTiles.forEach(({x,y})=>{
-        // x*= tileSize - camera.pos.x;
-        // y*= tileSize - camera.pos.y;
         context.strokeStyle ='blue';
         context.strokeRect(
             x * tileSize - camera.pos.x,
             y * tileSize - camera.pos.y,
             tileSize,
-            tileSize);
+            tileSize
+        );
         context.stroke();
     });
     level.entities.forEach((entity)=>{
-        const {pos:{x,y}, size:{x:sX,y:sY}} = entity;
+        const {size:{x:w,y:h}} = entity;
 
         context.strokeStyle ='red';
-        context.strokeRect(x-camera.pos.x,y-camera.pos.y ,sX,sY);
+        context.strokeRect(
+            entity.bounds.left - camera.pos.x,
+            entity.bounds.top - camera.pos.y,
+            w,
+            h);
         context.stroke();
         });
     resolvedTiles.length = 0;
